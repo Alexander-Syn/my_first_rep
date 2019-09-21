@@ -1,0 +1,261 @@
+---
+title: "Plots"
+author: "Alexander Schanne"
+date: "June 26, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##plots  
+
+# diagnostic plots
+
+
+
+```{r}
+
+qqplot(data)
+qqline(data)
+
+
+boxplot(data)
+
+quantile( data, c(0.25, 0.75))
+
+hist(data, prob=T)
+
+# When constructing histograms for discrete data (e.g., integer values), one has to be
+# careful with the binning. Often it is better to manually force the bins. To represent the result
+# of many dice tosses, it would be advisable to use hist( x, breaks=seq( from=0.5,
+# to=6.5, by=1)), or possibly barplots as explained towards the end of this section. from script
+
+
+```
+
+```{r}
+
+EDA 
+
+str()
+
+head()
+
+#diagnostic plots are different depending on the problem, f.e REGRESSION
+
+resid plot?
+boxplot? <- see self test, exercises
+scatterplot (pairs())
+
+
+
+```
+
+
+# special plots
+
+```{r}
+
+bmipositive <- pima$bmi[pima$bmi>0 & pima$test=="positive"]
+bminegative <- pima$bmi[pima$bmi>0 & pima$test=="negative"]
+
+qqnorm( bmipositive, col=2, main='', ylim=c(10,70), pch = "+")
+qqline( bmipositive, col=2)
+tmp <- qqnorm( bminegative, plot.it=F)
+points( tmp, col=4, pch = "-")
+qqline( bminegative, col=4)
+
+```
+
+# hist / density plots. special
+
+```{r}
+n <- c(10, 100, 1000)
+
+set.seed(1)
+par(mfrow=c(1,3))
+for (i in n) {
+  simdat <-rexp(i, rate=2)
+  d <- density(simdat)
+  hist(simdat, ylim=c(0,2), prob=T, main = paste("histogram for", deparse(i), "realisations"), xlab = "simulated data")
+  rug(simdat)
+  lines(d$x[d$x>=0], d$y[d$x>=0], col=4, lwd=2)
+  lines(seq(0, 4, l=1000), dexp(seq(0, 4, l=1000), rate=2), col=2, lwd=2.5, lty=2)
+}
+```
+
+# cdf plots
+
+```{r}
+# compare cdf of discrete! distr with an approximation (normality approximation of binomial)
+
+#rule!! : If  np(1 - p) >= 9 normal approximation can be used for binomial ; different rules in strictness
+
+n <- 95
+x <- 8
+p <- x/n # ML estimator
+
+
+n*p*(1 - p)
+
+# exact cdf of binomial
+
+grid = seq(0, 0.2, length.out = 1000) # length.out = desired lentgh of the seq
+plot(grid, pbinom(grid*n, n, p), type="l", col=2, ylab="", xlab="", main="exact cdf and normal approximation")
+lines(grid, pnorm(grid, p, sqrt(1/n*p*(1-p))), col=4)
+
+
+
+```
+
+
+
+#  MANY DIFFERENNT PLOTS; RUG DENSITY BELL CURVE HIST ETC.
+
+```{r}
+# 2 pmf's in the same plot (poisson)
+
+plot(0:12, dpois(0:12, 2), ylab="", xlab="", main="pmf poisson", type="h", axes=FALSE, col="2", ylim=c(0,0.35))
+
+axis(1, at=0:12)
+axis(2)
+
+points(0:12, dpois(0:12,2), pch=19, col="2", ylab="", xlab="")
+points(0:12+0.05, dpois(0:12, 5), type="h", col=4)
+points(0:12+0.05, dpois(0:12,5), pch=19, col=4)
+legend("topright", pch=c(19,19), legend=c(expression(lambda == 2),
+expression(lambda == 5.5)),col = c("2", "4"))
+
+
+
+lambda1 <- 2
+lambda2 <- 5
+grid <- 0:12
+prob1 <- ppois(grid, lambda1)
+prob2 <- ppois(grid, lambda2)
+prob1= c(0, prob1)
+prob2= c(0,prob2)
+
+plot(stepfun(grid, prob1), main="cdf for lambda=2 and lambda =5", col="2", axes=F, verticals = F, pch=19)
+axis(1, at=-1:12)
+axis(2)
+plot(stepfun(grid, prob2), col=4, verticals = F, add=T, pch=19)
+legend("bottomright", legend = c(expression(lambda==2), expression(lambda==5)), col=c(2,4), pch=19)
+
+dat <- rpois(1000, lambda1)
+
+hist(dat, xlab = "", prob = T, breaks = seq(min(dat)-0.5, max(dat)+0.5, by = 1),
+main = expression(lambda == 1), axes = F)
+axis(side = 1, at = unique(dat))
+axis(2)
+points(unique(dat), dpois(unique(dat), lambda1), pch = 19)
+
+# special histogram with own grid and some special stuff.
+
+require("spam")
+
+hist(Oral$SMR, breaks = "FD", prob = T)
+grid = seq(min(Oral$SMR)-0.2, max(Oral$SMR), l = 1000)
+lines(grid, dnorm(grid, mean(Oral$SMR), sd(Oral$SMR)), lwd = 2, col = "red")
+
+```
+
+# most prominently cdfs via stepfun ecdf and other methods.
+# Multiple data in one plot, axis manipulation
+
+
+# Use points to add discrete functions and lines for continous fcts. pch specifies type of points.
+# You can assign more than one property to an object with = see prob1 altough I am not sure what it means exactly. ASK
+# by=1 means that the sequence will go up by 1 per step!!!
+# with special binning in hist the middle of the bars is on 0,1,2 etc... Dots that follow are in the middle.
+
+
+
+
+## QQPLOT FOR POIS
+
+
+```{r}
+sub <-subset(Oral, 35 < E & E < 45)
+qqplot(x= qpois(ppoints(sub$Y), lambda=mean(sub$Y)), y=sub$Y, ylim=c(15,60),xlim=c(15,60), main="Poisson Q-Q Plot",xlab ="theoretical quantiles", ylab ="sample quantiles")
+
+qqline(sub$Y, distribution = function(p) qpois(p,lambda = mean(sub$Y)))
+abline(0,1,col="red")
+
+
+sim <- rpois(length(sub$Y), lambda = mean(sub$Y))
+
+qqplot(x=qpois(ppoints(length(sim)), lambda=mean(sim)), y = sim, ylim=c(15,60), xlim=c(15,60), main="Q-Q Plot Simulated Data", xlab ="theoretical quantiles (Poisson)", ylab ="simulated quantiles")
+
+qqline(sim, distribution = function(p) qpois(p,lambda = mean(sim)))
+abline(0,1, col=2)
+```
+
+# What does abline do here? why add this?
+# compare quantiles of sub$Y with quantiles of qpois use lambda estimator (mean) for qpois to see if the qpois is distributed as the sub$Y
+
+# qqline, why use function(p)? no , between function and qpois, p was never defined?? ASK
+
+
+### BIVARIATE PLOTTING
+
+```{r}
+require( mvtnorm)
+require( fields) # providing tim.colors()
+Sigma <- array( c(3,2,2,3), c(2,2)) # numbers in middle must be the same (symmetric matrix)
+
+#  first and last value of c(var, cov, cov, var) influence the shape width. negative values of cov leads to different orientation of the point cloud/ellipse in this case.
+
+x1 <- seq( -3, to=3, length=100)
+x2 <- seq( -3, to=3, length=99)
+grid <- expand.grid( x1, x2)
+densgrid <- dmvnorm( grid, mean=c(0,0), sigma=Sigma)
+dens <- matrix( densgrid, length( x1), length( x2))
+image(x1, x2, dens, col=tim.colors()) # left panel
+faccol <- tim.colors()[cut(dens[-1,-1],64)]
+persp(x1, x2, dens, col=faccol, border = NA, # right panel
+tick='detailed', theta=120, phi=30, r=100)
+```
+
+
+# cut through above density
+
+```{r}
+
+
+require( ellipse)
+n <- c(10, 100, 500, 1000)
+mu <- c(2,1)
+Sigma <- matrix( c(4,2,2,2), 2)
+for (i in 1:4) {
+plot(ellipse( Sigma, cent=mu, level=.95), col='gray',
+xaxs='i', yaxs='i', xlim=c(-4,8), ylim=c(-4,6), type='l')
+lines( ellipse( Sigma, cent=mu, level=.5), col='gray')
+sample <- rmvnorm( n[i], mean=mu, sigma=Sigma)
+points(sample, pch='.', cex=2)
+Sigmahat <- cov( sample)
+muhat <- apply( sample, 2, mean)
+lines( ellipse( Sigmahat, cent=muhat, level=.95), col=2, lwd=2)
+lines( ellipse( Sigmahat, cent=muhat, level=.5), col=4, lwd=2)
+points( rbind( muhat), col=3, cex=2)
+text(-2,4, paste('n =',n[i]))
+}
+
+```
+
+# POINT CLOUDS
+
+```{r}
+par(mfrow=c(2,3))
+rho <- c(-.25, 0, .1, .25, .75, .9)
+for (i in 1:6) {
+Sigma <- array( c(1, rho[i], rho[i], 1), c(2,2)) # rho must be the same cause symetric matrix)
+sample <- rmvnorm( 500, sigma=Sigma)
+plot(sample, pch='.', xlab='', ylab='')
+legend( "topleft", legend=bquote(rho==.(rho[i])), bty='n')
+}
+
+
+```
